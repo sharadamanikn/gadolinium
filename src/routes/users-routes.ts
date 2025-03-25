@@ -1,26 +1,50 @@
 import { Hono } from "hono";
-import { logInWithUsernameAndPassword, signUpWithUsernameAndPassword } from "../controllers/authentication/authentication-controllers";
-import { LogInWtihUsernameAndPasswordError, SignUpWithUsernameAndPasswordError } from "../controllers/authentication/authentication-types";
-import jwt from "jsonwebtoken";
-import { jwtSecretKey } from "../../environment";
 import { prismaClient } from "../extras/prisma";
+import { tokenMiddleware } from "./middlewares/token-middleware";
+import { getMe } from "../controllers/users/users-controllers";
+import { GetMeError } from "../controllers/users/users-types";
+
+export const usersRoutes = new Hono();
+
+usersRoutes.get("/me", tokenMiddleware, async (context) => {
+  const userId = context.get("userId");
+
+  try {
+    const user = await getMe({
+      userId,
+    });
+
+    return context.json(
+      {
+        data: user,
+      },
+      200
+    );
+  } catch (e) {
+    if (e === GetMeError.BAD_REQUEST) {
+      return context.json(
+        {
+          error: "User not found",
+        },
+        400
+      );
+    }
+
+    return context.json(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
+  }
+});
+
+usersRoutes.get("/getAllUsers", tokenMiddleware, async (context) => {
+  const users = await prismaClient.user.findMany();
+return context.json({data:users})
+  return context.json(users, 200);
+});
 
 
-export const userRoutes = new Hono();
 
-userRoutes.get("/users", async (context, next) => {
-    const token = context.req.header("token");
-    if (!token) {
-      return context.json({ error: "Unauthorized" }, 401);
-    }  try {
-      const verified = jwt.verify(token, jwtSecretKey);
-      if (!verified) {
-        return context.json({ error: "Invalid Token" }, 401);
-      }
-      await next();
-    } catch (err) {
-      return context.json({ error: "Invalid Token" }, 401);
-    }}, async (c) => {
-    const users = await prismaClient.user.findMany();
-    return c.json(users, 200);
-  });
+
