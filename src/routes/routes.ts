@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+/* import { Hono } from "hono";
 import {
   LogInWtihUsernameAndPasswordError,
   SignUpWithUsernameAndPasswordError,
@@ -13,6 +13,9 @@ export const allRoutes = new Hono();
 import { prismaClient } from "../extras/prisma";
 import jwt from "jsonwebtoken";
 import { jwtSecretKey } from "../../environment";
+
+
+
 
 
 
@@ -40,6 +43,27 @@ allRoutes.get("/health",
    return c.json({ status: " ALLLL ok" });
 });
 
+*/
 
 
+import { Hono } from "hono";
+import { authenticationRoutes } from "./authentication-routes";
+import { usersRoutes } from "./users-routes";
+import { logger } from "hono/logger";
+
+export const allRoutes = new Hono();
+
+allRoutes.use(logger());
+
+allRoutes.route("/authentication", authenticationRoutes);
+allRoutes.route("/users", usersRoutes);
+
+allRoutes.get("/health", (context) => {
+  return context.json(
+    {
+      message: "All Ok",
+    },
+    200
+  );
+});
 
