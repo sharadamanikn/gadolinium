@@ -9,7 +9,7 @@ export enum GetMeError {
 }
 
 export type userResult = {
-    users: Array<User>;
+    users: User[];
 }
 
 
