@@ -19,7 +19,7 @@ export const getMe = async (parameters: { userId: string }): Promise<GetMeResult
 
 import { type userResult } from "./users-types";
 
-export const getAllUsers = async (parameters: {}): Promise<userResult> => {
+export const getAllUsers = async (): Promise<userResult> => {
     const users = await prismaClient.user.findMany();
     if (!users) {
       throw userError.BAD_REQUEST;
